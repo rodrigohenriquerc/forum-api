@@ -1,7 +1,9 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "./db";
 
-export class User extends Model {}
+export class User extends Model {
+  declare password_hash: string;
+}
 
 User.init(
   {

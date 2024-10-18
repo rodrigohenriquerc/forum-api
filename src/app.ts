@@ -41,10 +41,39 @@ app.post("/auth/register", (req, res) => {
         password_hash: passwordHash,
       });
 
-      console.log(user.toJSON());
-
       res.sendStatus(204);
     });
+  }
+});
+
+app.post("/auth/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const errors = [];
+
+  if (!email) {
+    errors.push("Email is required.");
+  }
+  if (!password) {
+    errors.push("Password is required.");
+  }
+
+  if (errors.length) {
+    res.status(400).json({ messages: errors });
+  } else {
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      res.status(400).json({ messages: ["Invalid credentials."] });
+    } else {
+      const isMatch = await bcrypt.compare(password, user.password_hash);
+
+      if (!isMatch) {
+        res.status(400).json({ messages: ["Invalid credentials."] });
+      } else {
+        res.status(200).json({ messages: ["The user was authenticated"] });
+      }
+    }
   }
 });
 
