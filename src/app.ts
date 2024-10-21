@@ -40,10 +40,6 @@ const authMiddleware = (
   }
 };
 
-app.get("/", (_req, res) => {
-  res.json({ message: "Hi!" });
-});
-
 app.post("/auth/register", (req, res) => {
   const { name, email, password } = req.body;
 
