@@ -2,6 +2,9 @@ import { DataTypes, Model } from "sequelize";
 import { sequelize } from "./db";
 
 export class User extends Model {
+  declare id: number;
+  declare name: string;
+  declare email: string;
   declare password_hash: string;
 }
 
