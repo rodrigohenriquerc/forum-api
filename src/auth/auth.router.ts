@@ -1,83 +1,73 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+import { matchedData } from "express-validator";
+
 import { User } from "../models";
+import { validateLogin, validateRegister } from "./auth.validators";
 
 export const authRouter = Router();
 
-authRouter.post("/auth/register", (req, res) => {
-  const { name, email, password } = req.body;
+authRouter.post(
+  "/auth/register",
+  validateRegister,
+  async (req: Request, res: Response) => {
+    const { name, email, password } = matchedData(req);
 
-  const errors = [];
+    const user = await User.findOne({ where: { email } });
 
-  if (!name) {
-    errors.push("Name is required.");
-  }
-  if (!email) {
-    errors.push("Email is required.");
-  }
-  if (!password) {
-    errors.push("Password is required.");
-  }
+    if (user) {
+      res.status(400).json({ messages: ["Email already in use"] });
+      return;
+    }
 
-  if (errors.length) {
-    res.status(400).json({ messages: errors });
-  } else {
     bcrypt.hash(password, 10, async (error, passwordHash) => {
-      if (error) throw Error("Unable to hash the password");
+      if (error) {
+        res
+          .status(400)
+          .json({ messages: ["Error registering user. Try again."] });
+        return;
+      }
 
-      await User.create({
+      const user = await User.create({
         name,
         email,
         password_hash: passwordHash,
       });
 
-      res.sendStatus(204);
+      res.status(200).json({ data: user });
     });
   }
-});
+);
 
-authRouter.post("/auth/login", async (req, res) => {
-  const { email, password } = req.body;
+authRouter.post("/auth/login", validateLogin, async (req, res) => {
+  const { email, password } = matchedData(req);
 
-  const errors = [];
+  const user = await User.findOne({ where: { email } });
 
-  if (!email) {
-    errors.push("Email is required.");
-  }
-  if (!password) {
-    errors.push("Password is required.");
+  if (!user) {
+    res.status(400).json({ messages: ["Invalid email."] });
+    return;
   }
 
-  if (errors.length) {
-    res.status(400).json({ messages: errors });
-  } else {
-    const user = await User.findOne({ where: { email } });
+  const isMatch = await bcrypt.compare(password, user.password_hash);
 
-    if (!user) {
-      res.status(400).json({ messages: ["Invalid credentials."] });
-    } else {
-      const isMatch = await bcrypt.compare(password, user.password_hash);
-
-      if (!isMatch) {
-        res.status(400).json({ messages: ["Invalid credentials."] });
-      } else {
-        const token = jwt.sign(
-          {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-          },
-          process.env.JWT_SECRET as string,
-          { expiresIn: "1h" }
-        );
-
-        res
-          .status(200)
-          .json({ messages: ["The user was authenticated"], token });
-      }
-    }
+  if (!isMatch) {
+    res.status(400).json({ messages: ["Invalid password."] });
+    return;
   }
+
+  const token = jwt.sign(
+    {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    },
+    process.env.JWT_SECRET as string,
+    { expiresIn: "1h" }
+  );
+
+  res.status(200).json({ messages: ["The user was authenticated"], token });
 });
