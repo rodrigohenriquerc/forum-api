@@ -27,10 +27,19 @@ postsRouter.post("/posts/create", authMiddleware, async (req, res) => {
   }
 });
 
-postsRouter.delete("/posts/:id/delete", authMiddleware, (req, res) => {
+postsRouter.delete("/posts/:id/delete", authMiddleware, async (req, res) => {
   const { id: postId } = req.params;
 
-  Post.destroy({ where: { id: postId } });
+  await Post.destroy({ where: { id: postId } });
 
   res.status(200).json({ message: "The post was removed." });
+});
+
+postsRouter.put("/posts/:id/update", authMiddleware, async (req, res) => {
+  const { id: postId } = req.params;
+  const { title, content } = req.body;
+
+  await Post.update({ title, content }, { where: { id: postId } });
+
+  res.status(200).json({ message: "The post was updated." });
 });
