@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import "./models";
 
 import { JWT_SECRET } from "../config";
 
