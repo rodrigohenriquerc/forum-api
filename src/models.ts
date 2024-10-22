@@ -64,7 +64,6 @@ Post.belongsTo(User, { foreignKey: 'userId' });
 
 export class Comment extends Model {
   declare id: number;
-  declare title: string;
   declare content: string;
 }
 
