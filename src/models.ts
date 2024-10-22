@@ -59,8 +59,8 @@ Post.init(
   { sequelize }
 );
 
-User.hasMany(Post, { foreignKey: 'userId' });
-Post.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Post, { foreignKey: "userId" });
+Post.belongsTo(User, { foreignKey: "userId" });
 
 export class Comment extends Model {
   declare id: number;
@@ -82,10 +82,59 @@ Comment.init(
   { sequelize }
 );
 
-Post.hasMany(Comment, { foreignKey: 'postId' });
-Comment.belongsTo(Post, { foreignKey: 'postId' });
-User.hasMany(Comment, { foreignKey: 'userId' });
-Comment.belongsTo(User, { foreignKey: 'userId' });
+Post.hasMany(Comment, { foreignKey: "postId" });
+Comment.belongsTo(Post, { foreignKey: "postId" });
+User.hasMany(Comment, { foreignKey: "userId" });
+Comment.belongsTo(User, { foreignKey: "userId" });
+
+export class Vote extends Model {
+  declare id: number;
+  declare choice: "up" | "down";
+}
+
+export class PostVote extends Vote {}
+
+PostVote.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    choice: {
+      type: DataTypes.ENUM("up", "down"),
+      allowNull: false,
+    },
+  },
+  { sequelize }
+);
+
+Post.hasMany(PostVote, { foreignKey: "postId" });
+PostVote.belongsTo(Post, { foreignKey: "postId" });
+User.hasMany(PostVote, { foreignKey: "userId" });
+PostVote.belongsTo(User, { foreignKey: "userId" });
+
+export class CommentVote extends Vote {}
+
+CommentVote.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    choice: {
+      type: DataTypes.ENUM("up", "down"),
+      allowNull: false,
+    },
+  },
+  { sequelize }
+);
+
+Comment.hasMany(CommentVote, { foreignKey: "commentId" });
+CommentVote.belongsTo(Comment, { foreignKey: "commentId" });
+User.hasMany(CommentVote, { foreignKey: "userId" });
+CommentVote.belongsTo(User, { foreignKey: "userId" });
 
 (async () => {
   try {

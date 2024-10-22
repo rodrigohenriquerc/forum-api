@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Post, Comment } from "../models";
+import { Post, Comment, PostVote, CommentVote } from "../models";
 import { authMiddleware } from "../auth/auth.middleware";
 import { JwtPayload } from "jsonwebtoken";
 
@@ -27,16 +27,20 @@ postsRouter.post("/posts/create", authMiddleware, async (req, res) => {
   }
 });
 
-postsRouter.delete("/posts/:id/delete", authMiddleware, async (req, res) => {
-  const { id: postId } = req.params;
+postsRouter.delete(
+  "/posts/:postId/delete",
+  authMiddleware,
+  async (req, res) => {
+    const { postId } = req.params;
 
-  await Post.destroy({ where: { id: postId } });
+    await Post.destroy({ where: { id: postId } });
 
-  res.status(200).json({ message: "The post was removed." });
-});
+    res.status(200).json({ message: "The post was removed." });
+  }
+);
 
-postsRouter.put("/posts/:id/update", authMiddleware, async (req, res) => {
-  const { id: postId } = req.params;
+postsRouter.put("/posts/:postId/update", authMiddleware, async (req, res) => {
+  const { postId } = req.params;
   const { title, content } = req.body;
 
   await Post.update({ title, content }, { where: { id: postId } });
@@ -44,8 +48,54 @@ postsRouter.put("/posts/:id/update", authMiddleware, async (req, res) => {
   res.status(200).json({ message: "The post was updated." });
 });
 
-postsRouter.get("/posts/:id/comments", async (req, res) => {
-  const { id: postId } = req.params;
+postsRouter.post("/posts/:postId/upvote", authMiddleware, async (req, res) => {
+  const userId = (req.user as JwtPayload)?.id;
+
+  const { postId } = req.params;
+
+  const currentVote = await PostVote.findOne({ where: { postId } });
+
+  if (!currentVote) {
+    await PostVote.create({ userId, postId, choice: "up" });
+    res.status(200).json({ message: "The upvote has been registered." });
+  } else if (currentVote.choice === "up") {
+    await currentVote.destroy();
+    res.status(200).json({ message: "The upvote has been removed." });
+  } else {
+    await currentVote.update({ choice: "up" });
+    res.status(200).json({
+      message: "The change from downvote to upvote has been registered.",
+    });
+  }
+});
+
+postsRouter.post(
+  "/posts/:postId/downvote",
+  authMiddleware,
+  async (req, res) => {
+    const userId = (req.user as JwtPayload)?.id;
+
+    const { postId } = req.params;
+
+    const currentVote = await PostVote.findOne({ where: { postId } });
+
+    if (!currentVote) {
+      await PostVote.create({ userId, postId, choice: "down" });
+      res.status(200).json({ message: "The downvote has been registered." });
+    } else if (currentVote.choice === "down") {
+      await currentVote.destroy();
+      res.status(200).json({ message: "The downvote has been removed." });
+    } else {
+      await currentVote.update({ choice: "down" });
+      res.status(200).json({
+        message: "The change from upvote to downvote has been registered.",
+      });
+    }
+  }
+);
+
+postsRouter.get("/posts/:postId/comments", async (req, res) => {
+  const { postId } = req.params;
 
   const comments = await Comment.findAll({ where: { postId } });
 
@@ -53,12 +103,12 @@ postsRouter.get("/posts/:id/comments", async (req, res) => {
 });
 
 postsRouter.post(
-  "/posts/:id/comments/create",
+  "/posts/:postId/comments/create",
   authMiddleware,
   async (req, res) => {
     const userId = (req.user as JwtPayload)?.id;
 
-    const { id: postId } = req.params;
+    const { postId } = req.params;
     const { content } = req.body;
 
     if (!content) {
@@ -95,3 +145,45 @@ postsRouter.put(
     res.status(200).json({ message: "The comment was updated." });
   }
 );
+
+postsRouter.post("/posts/:postId/comments/:commentId/upvote", authMiddleware, async (req, res) => {
+  const userId = (req.user as JwtPayload)?.id;
+
+  const { commentId } = req.params;
+
+  const currentVote = await CommentVote.findOne({ where: { commentId } });
+
+  if (!currentVote) {
+    await CommentVote.create({ userId, commentId, choice: "up" });
+    res.status(200).json({ message: "The upvote has been registered." });
+  } else if (currentVote.choice === "up") {
+    await currentVote.destroy();
+    res.status(200).json({ message: "The upvote has been removed." });
+  } else {
+    await currentVote.update({ choice: "up" });
+    res.status(200).json({
+      message: "The change from downvote to upvote has been registered.",
+    });
+  }
+});
+
+postsRouter.post("/posts/:postId/comments/:commentId/downvote", authMiddleware, async (req, res) => {
+  const userId = (req.user as JwtPayload)?.id;
+
+  const { commentId } = req.params;
+
+  const currentVote = await CommentVote.findOne({ where: { commentId } });
+
+  if (!currentVote) {
+    await CommentVote.create({ userId, commentId, choice: "down" });
+    res.status(200).json({ message: "The downvote has been registered." });
+  } else if (currentVote.choice === "down") {
+    await currentVote.destroy();
+    res.status(200).json({ message: "The downvote has been removed." });
+  } else {
+    await currentVote.update({ choice: "down" });
+    res.status(200).json({
+      message: "The change from upvote to downvote has been registered.",
+    });
+  }
+});
