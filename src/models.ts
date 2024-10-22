@@ -62,6 +62,32 @@ Post.init(
 User.hasMany(Post, { foreignKey: 'userId' });
 Post.belongsTo(User, { foreignKey: 'userId' });
 
+export class Comment extends Model {
+  declare id: number;
+  declare title: string;
+  declare content: string;
+}
+
+Comment.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    content: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  { sequelize }
+);
+
+Post.hasMany(Comment, { foreignKey: 'postId' });
+Comment.belongsTo(Post, { foreignKey: 'postId' });
+User.hasMany(Comment, { foreignKey: 'userId' });
+Comment.belongsTo(User, { foreignKey: 'userId' });
+
 (async () => {
   try {
     await sequelize.sync({ alter: true });
