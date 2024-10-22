@@ -116,6 +116,10 @@ app.post("/auth/login", async (req, res) => {
   }
 });
 
+app.get("/users/me", authMiddleware, (req, res) => {
+  res.json(req.user);
+});
+
 app.get("/posts", authMiddleware, (req, res) => {
   res.status(200).json([]);
 });
