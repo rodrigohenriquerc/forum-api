@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { User } from "../models";
-import { JWT_SECRET } from "../config";
 
 export const authRouter = Router();
 
@@ -71,7 +70,7 @@ authRouter.post("/auth/login", async (req, res) => {
             name: user.name,
             email: user.email,
           },
-          JWT_SECRET,
+          process.env.JWT_SECRET as string,
           { expiresIn: "1h" }
         );
 

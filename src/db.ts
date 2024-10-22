@@ -1,11 +1,11 @@
 import { Sequelize } from "sequelize";
 
 export const sequelize = new Sequelize({
-  database: "forum",
-  username: "rodrigo",
-  password: "1234",
-  host: "localhost",
-  dialect: "postgres",
+  database: process.env.DATABASE_NAME,
+  username: process.env.DATABASE_USERNAME,
+  password: process.env.DATABASE_PASSWORD,
+  host: process.env.DATABASE_HOST,
+  dialect: process.env.DATABASE_DIALECT,
   logging: console.log,
 });
 

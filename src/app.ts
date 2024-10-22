@@ -8,7 +8,7 @@ const app = express();
 
 app.use(express.json());
 
-const port = 3000;
+const port = process.env.API_PORT;
 
 app.use(authRouter, postsRouter);
 
