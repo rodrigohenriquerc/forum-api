@@ -34,9 +34,37 @@ User.init(
   }
 );
 
+export class Post extends Model {
+  declare id: number;
+  declare title: string;
+  declare content: string;
+}
+
+Post.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    content: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  { sequelize }
+);
+
+User.hasMany(Post, { foreignKey: 'userId' });
+Post.belongsTo(User, { foreignKey: 'userId' });
+
 (async () => {
   try {
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log("Database synced.");
   } catch (error) {
     console.error("Unable to sync the database:", error);
