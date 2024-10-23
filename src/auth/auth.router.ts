@@ -6,13 +6,13 @@ import jwt from "jsonwebtoken";
 import { matchedData } from "express-validator";
 
 import { User } from "../models";
-import { validateLogin, validateRegister } from "./auth.validators";
+import { registerValidator, loginValidator } from "./auth.validators";
 
 export const authRouter = Router();
 
 authRouter.post(
   "/auth/register",
-  validateRegister,
+  registerValidator,
   async (req: Request, res: Response) => {
     const { name, email, password } = matchedData(req);
 
@@ -42,7 +42,7 @@ authRouter.post(
   }
 );
 
-authRouter.post("/auth/login", validateLogin, async (req, res) => {
+authRouter.post("/auth/login", loginValidator, async (req, res) => {
   const { email, password } = matchedData(req);
 
   const user = await User.findOne({ where: { email } });

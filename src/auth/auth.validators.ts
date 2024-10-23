@@ -1,7 +1,7 @@
 import { body } from "express-validator";
 import { runValidations } from "../utils";
 
-export const validateRegister = runValidations([
+export const registerValidator = runValidations([
   body("name").trim().notEmpty().withMessage("Name is required."),
   body("email")
     .notEmpty()
@@ -15,7 +15,7 @@ export const validateRegister = runValidations([
     .withMessage("Password must contain at least 8 characters"),
 ]);
 
-export const validateLogin = runValidations([
+export const loginValidator = runValidations([
   body("email")
     .notEmpty()
     .withMessage("Email is required.")
