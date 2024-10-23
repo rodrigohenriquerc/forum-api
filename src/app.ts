@@ -1,10 +1,10 @@
 import express from "express";
 import "./models";
 
-import { authRouter } from "./auth/auth.router";
-import { postsRouter } from "./posts/posts.router";
-import { commentsRouter } from "./comments/comments.router";
-import { usersRouter } from "./users/users.router";
+import { authRouter } from "./modules/auth/auth.router";
+import { postsRouter } from "./modules/posts/posts.router";
+import { commentsRouter } from "./modules/comments/comments.router";
+import { usersRouter } from "./modules/users/users.router";
 
 const app = express();
 

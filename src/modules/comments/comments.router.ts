@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Comment, CommentVote } from "../models";
+import { Comment, CommentVote } from "../../models";
 import { authMiddleware } from "../auth/auth.middleware";
 import { JwtPayload } from "jsonwebtoken";
 import {

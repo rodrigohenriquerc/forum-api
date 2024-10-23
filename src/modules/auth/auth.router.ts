@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 import { matchedData } from "express-validator";
 
-import { User } from "../models";
+import { User } from "../../models";
 import { registerValidator, loginValidator } from "./auth.validators";
 
 export const authRouter = Router();

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../auth/auth.middleware";
-import { User } from "../models";
+import { User } from "../../models";
 import { JwtPayload } from "jsonwebtoken";
 import { meUpdateValidator } from "./users.validators";
 
