@@ -131,6 +131,8 @@ CommentVote.init(
   { sequelize }
 );
 
+Post.hasMany(CommentVote, { foreignKey: "postId" });
+CommentVote.belongsTo(Post, { foreignKey: "postId" });
 Comment.hasMany(CommentVote, { foreignKey: "commentId" });
 CommentVote.belongsTo(Comment, { foreignKey: "commentId" });
 User.hasMany(CommentVote, { foreignKey: "userId" });
