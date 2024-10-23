@@ -17,6 +17,7 @@ export const registerValidator = runValidations([
 
 export const loginValidator = runValidations([
   body("email")
+    .trim()
     .notEmpty()
     .withMessage("Email is required.")
     .isEmail()
