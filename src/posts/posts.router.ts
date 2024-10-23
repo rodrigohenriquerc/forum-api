@@ -44,9 +44,11 @@ postsRouter.delete(
   authMiddleware,
   postDeletionValidator,
   async (req, res) => {
+    const userId = (req.user as JwtPayload)?.id;
+
     const { postId } = req.params;
 
-    await Post.destroy({ where: { id: postId } });
+    await Post.destroy({ where: { id: postId, userId } });
 
     res.status(200).json({ message: "The post was removed." });
   }
@@ -57,10 +59,12 @@ postsRouter.put(
   authMiddleware,
   postUpdateValidator,
   async (req, res) => {
+    const userId = (req.user as JwtPayload)?.id;
+
     const { postId } = req.params;
     const { title, content } = req.body;
 
-    await Post.update({ title, content }, { where: { id: postId } });
+    await Post.update({ title, content }, { where: { id: postId, userId } });
 
     res.status(200).json({ message: "The post was updated." });
   }
@@ -75,7 +79,7 @@ postsRouter.post(
 
     const { postId } = req.params;
 
-    const currentVote = await PostVote.findOne({ where: { postId } });
+    const currentVote = await PostVote.findOne({ where: { postId, userId } });
 
     if (!currentVote) {
       await PostVote.create({ userId, postId, choice: "up" });
@@ -101,7 +105,7 @@ postsRouter.post(
 
     const { postId } = req.params;
 
-    const currentVote = await PostVote.findOne({ where: { postId } });
+    const currentVote = await PostVote.findOne({ where: { postId, userId } });
 
     if (!currentVote) {
       await PostVote.create({ userId, postId, choice: "down" });
@@ -151,9 +155,11 @@ postsRouter.delete(
   authMiddleware,
   commentDeletionValidator,
   async (req, res) => {
+    const userId = (req.user as JwtPayload)?.id;
+    
     const { postId, commentId } = req.params;
 
-    await Comment.destroy({ where: { id: commentId, postId } });
+    await Comment.destroy({ where: { id: commentId, postId, userId } });
 
     res.status(200).json({ message: "The comment was removed." });
   }
@@ -164,10 +170,12 @@ postsRouter.put(
   authMiddleware,
   commentUpdateValidator,
   async (req, res) => {
+    const userId = (req.user as JwtPayload)?.id;
+    
     const { postId, commentId } = req.params;
     const { content } = req.body;
 
-    await Comment.update({ content }, { where: { id: commentId, postId } });
+    await Comment.update({ content }, { where: { id: commentId, postId, userId } });
 
     res.status(200).json({ message: "The comment was updated." });
   }
@@ -183,11 +191,11 @@ postsRouter.post(
     const { commentId, postId } = req.params;
 
     const currentVote = await CommentVote.findOne({
-      where: { commentId, postId },
+      where: { commentId, postId, userId },
     });
 
     if (!currentVote) {
-      await CommentVote.create({ userId, commentId, choice: "up" });
+      await CommentVote.create({ userId, commentId, postId, choice: "up" });
       res.status(200).json({ message: "The upvote has been registered." });
     } else if (currentVote.choice === "up") {
       await currentVote.destroy();
@@ -211,7 +219,7 @@ postsRouter.post(
     const { commentId, postId } = req.params;
 
     const currentVote = await CommentVote.findOne({
-      where: { commentId, postId },
+      where: { commentId, postId, userId },
     });
 
     if (!currentVote) {
