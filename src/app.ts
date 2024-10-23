@@ -3,6 +3,7 @@ import "./models";
 
 import { authRouter } from "./auth/auth.router";
 import { postsRouter } from "./posts/posts.router";
+import { commentsRouter } from "./comments/comments.router";
 
 const app = express();
 
@@ -10,7 +11,7 @@ app.use(express.json());
 
 const port = process.env.API_PORT;
 
-app.use(authRouter, postsRouter);
+app.use(authRouter, postsRouter, commentsRouter);
 
 app.use((_, res) => {
   res.status(404).json({ messages: ["Not found"] });
