@@ -15,6 +15,7 @@ export const commentsRouter = Router();
 
 commentsRouter.get(
   "/posts/:postId/comments",
+  authMiddleware,
   commentsRequestValidator,
   async (req, res) => {
     const { postId } = req.params;

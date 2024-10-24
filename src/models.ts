@@ -31,6 +31,7 @@ User.init(
   },
   {
     sequelize,
+    name: { singular: "user" },
   }
 );
 
@@ -38,6 +39,10 @@ export class Post extends Model {
   declare id: number;
   declare title: string;
   declare content: string;
+  declare createdAt: string;
+  declare user: User;
+  declare comments: Comment[];
+  declare votes: PostVote[];
 }
 
 Post.init(
@@ -79,7 +84,12 @@ Comment.init(
       allowNull: false,
     },
   },
-  { sequelize }
+  {
+    sequelize,
+    name: {
+      plural: "comments",
+    },
+  }
 );
 
 Post.hasMany(Comment, { foreignKey: "postId" });
@@ -90,6 +100,7 @@ Comment.belongsTo(User, { foreignKey: "userId" });
 export class Vote extends Model {
   declare id: number;
   declare choice: "up" | "down";
+  declare userId: number;
 }
 
 export class PostVote extends Vote {}
@@ -106,7 +117,7 @@ PostVote.init(
       allowNull: false,
     },
   },
-  { sequelize }
+  { sequelize, name: { plural: "votes" } }
 );
 
 Post.hasMany(PostVote, { foreignKey: "postId" });
