@@ -4,7 +4,7 @@ import { matchedData } from "express-validator";
 
 import { registerValidator, loginValidator } from "./auth.validators";
 import { hashPassword, checkPassword } from "../../utils/password.util";
-import { generateToken } from "../../utils/jwt.util";
+import { generateToken, refreshToken } from "../../utils/jwt.util";
 import {
   createUser,
   findUserByEmail,
@@ -68,4 +68,22 @@ authRouter.post("/auth/login", loginValidator, async (req, res) => {
   });
 
   res.status(200).json({ messages: ["The user was authenticated."], token });
+});
+
+authRouter.post("/auth/refresh-token", (req: Request, res: Response) => {
+  const oldToken = req.header("Authorization");
+
+  if (!oldToken) {
+    res.sendStatus(401);
+    return;
+  }
+
+  const newToken = refreshToken(oldToken);
+
+  if (!newToken) {
+    res.sendStatus(401);
+    return;
+  }
+
+  res.status(200).json({ token: newToken });
 });
