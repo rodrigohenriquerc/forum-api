@@ -5,7 +5,7 @@ export class User extends Model {
   declare id: number;
   declare name: string;
   declare email: string;
-  declare password_hash: string;
+  declare passwordHash: string;
 }
 
 User.init(
@@ -24,7 +24,7 @@ User.init(
       allowNull: false,
       unique: true,
     },
-    password_hash: {
+    passwordHash: {
       type: DataTypes.STRING,
       allowNull: false,
     },

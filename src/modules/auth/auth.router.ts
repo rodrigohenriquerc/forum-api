@@ -34,7 +34,7 @@ authRouter.post(
       const user = await User.create({
         name,
         email,
-        password_hash: passwordHash,
+        passwordHash,
       });
 
       res.status(200).json({ data: user });
@@ -52,7 +52,7 @@ authRouter.post("/auth/login", loginValidator, async (req, res) => {
     return;
   }
 
-  const isMatch = await bcrypt.compare(password, user.password_hash);
+  const isMatch = await bcrypt.compare(password, user.passwordHash);
 
   if (!isMatch) {
     res.status(400).json({ messages: ["Invalid password."] });
