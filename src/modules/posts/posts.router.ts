@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../auth/auth.middleware";
+import { authMiddleware } from "../../middlewares/auth.middleware";
 import { JwtPayload } from "jsonwebtoken";
 import {
   postCreationValidator,
