@@ -1,12 +1,11 @@
 import { Router, Request, Response } from "express";
 
-import jwt from "jsonwebtoken";
-
 import { matchedData } from "express-validator";
 
 import { registerValidator, loginValidator } from "./auth.validators";
 import { User } from "../../models/user.model";
 import { hashPassword, checkPassword } from "../../utils/password.util";
+import { generateToken } from "../../utils/jwt.util";
 
 export const authRouter = Router();
 
@@ -59,15 +58,11 @@ authRouter.post("/auth/login", loginValidator, async (req, res) => {
     return;
   }
 
-  const token = jwt.sign(
-    {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-    process.env.JWT_SECRET as string,
-    { expiresIn: "1h" }
-  );
+  const token = generateToken({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  });
 
-  res.status(200).json({ messages: ["The user was authenticated"], token });
+  res.status(200).json({ messages: ["The user was authenticated."], token });
 });
