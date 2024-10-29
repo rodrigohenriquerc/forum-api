@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { verifyToken } from "../../utils/jwt.util";
 
 export const authMiddleware = (
   req: Request,
@@ -9,25 +9,19 @@ export const authMiddleware = (
   const token = req.header("Authorization");
 
   if (!token) {
-    res.status(401).json({ message: "No token, authorization denied" });
-  } else {
-    let access_token;
-
-    if (token.startsWith("Bearer ")) {
-      access_token = token.slice(7, token.length).trim();
-    } else {
-      access_token = token;
-    }
-
-    try {
-      const decoded = jwt.verify(
-        access_token,
-        process.env.JWT_SECRET as string
-      );
-      req.user = decoded;
-      next();
-    } catch (err) {
-      res.status(401).json({ message: "Token is not valid" });
-    }
+    res.status(401).json({ message: "Authorization denied: no token." });
+    return;
   }
+
+  const decoded = verifyToken(token);
+
+  if (!decoded) {
+    res
+      .status(401)
+      .json({ message: "Authorization denied: token is not valid." });
+    return;
+  }
+
+  req.user = decoded;
+  next();
 };
