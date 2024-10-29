@@ -1,5 +1,10 @@
 import jwt from "jsonwebtoken";
-import { generateToken, verifyToken } from "../../src/utils/jwt.util";
+import {
+  generateToken,
+  parseToken,
+  refreshToken,
+  verifyToken,
+} from "../../src/utils/jwt.util";
 
 jest.mock("jsonwebtoken");
 
@@ -12,18 +17,6 @@ describe("generateToken", () => {
 });
 
 describe("verifyToken", () => {
-  it("should format the received token if prefixed with 'Bearier '", () => {
-    verifyToken("Bearer foo_jwt");
-
-    expect(jwt.verify).toHaveBeenCalledWith("foo_jwt", process.env.JWT_SECRET);
-  });
-
-  it("should not format the received token if not prefixed with 'Bearier '", () => {
-    verifyToken("foo_jwt");
-
-    expect(jwt.verify).toHaveBeenCalledWith("foo_jwt", process.env.JWT_SECRET);
-  });
-
   it("should return the decoded value if the token is verified", () => {
     (jwt.verify as jest.Mock).mockReturnValue("decoded_value");
 
@@ -36,5 +29,31 @@ describe("verifyToken", () => {
     });
 
     expect(verifyToken("foo_jwt")).toBeNull;
+  });
+});
+
+describe("refreshToken", () => {
+  it("should decode the received token and generate a new one", () => {
+    (jwt.decode as jest.Mock).mockReturnValue("decoded");
+    (jwt.sign as jest.Mock).mockReturnValue("new_token");
+
+    const newToken = refreshToken("old_token");
+
+    expect(newToken).toBe("new_token");
+  });
+
+  it("should return nothing the received token can not be decoded", () => {
+    (jwt.decode as jest.Mock).mockReturnValue(undefined);
+
+    const newToken = refreshToken("old_token");
+
+    expect(newToken).toBeUndefined();
+  });
+});
+
+describe("parseToken", () => {
+  it("should remove any 'Bearier ' prefix from the received token", () => {
+    expect(parseToken("Bearer foo-token")).toBe("foo-token");
+    expect(parseToken("foo-token")).toBe("foo-token");
   });
 });
