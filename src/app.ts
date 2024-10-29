@@ -1,23 +1,29 @@
 import express from "express";
-import "./models";
 
 import { authRouter } from "./modules/auth/auth.router";
 import { postsRouter } from "./modules/posts/posts.router";
 import { commentsRouter } from "./modules/comments/comments.router";
 import { usersRouter } from "./modules/users/users.router";
+import { initDatabase } from "./db";
+import { syncModels } from "./models";
 
-const app = express();
+(async () => {
+  await initDatabase();
+  await syncModels();
 
-app.use(express.json());
+  const app = express();
 
-const port = process.env.API_PORT;
+  app.use(express.json());
 
-app.use(authRouter, postsRouter, commentsRouter, usersRouter);
+  const port = process.env.API_PORT;
 
-app.use((_, res) => {
-  res.status(404).json({ messages: ["Not found"] });
-});
+  app.use(authRouter, postsRouter, commentsRouter, usersRouter);
 
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
-});
+  app.use((_, res) => {
+    res.status(404).json({ message: "Not found" });
+  });
+
+  app.listen(port, () => {
+    console.log(`App listening on port ${port}`);
+  });
+})();

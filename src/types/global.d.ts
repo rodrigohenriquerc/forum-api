@@ -1,11 +1,15 @@
 declare namespace NodeJS {
   interface ProcessEnv {
-    API_PORT: string;
+    API_HOST: string;
+    API_PORT: number;
+    
     JWT_SECRET: string;
-    DATABASE_NAME: string;
-    DATABASE_USERNAME: string;
-    DATABASE_PASSWORD: string;
-    DATABASE_HOST: string;
-    DATABASE_DIALECT: "postgres";
+    
+    DB_HOST: string;
+    DB_PORT: number;
+    DB_NAME: string;
+    DB_USERNAME: string;
+    DB_PASSWORD: string;
+    DB_DIALECT: "postgres";
   }
 }

@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Comment, Post, PostVote, User } from "../../models";
 import { authMiddleware } from "../auth/auth.middleware";
 import { JwtPayload } from "jsonwebtoken";
 import {
@@ -9,45 +8,17 @@ import {
   postUpdateValidator,
   postUpvoteValidator,
 } from "./posts.validators";
+import { Post } from "../../models/post.model";
+import { PostVote } from "../../models/post-vote.model";
 
 export const postsRouter = Router();
 
 postsRouter.get("/posts", authMiddleware, async (req, res) => {
-  const userId = (req.user as JwtPayload)?.id;
-
   const posts = await Post.findAll({
     order: [["createdAt", "DESC"]],
-    include: [
-      {
-        model: User,
-      },
-      {
-        model: Comment,
-      },
-      {
-        model: PostVote,
-      },
-    ],
   });
 
-  const data = posts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    createdAt: post.createdAt,
-    user: {
-      id: post.user.id,
-      name: post.user.name,
-    },
-    commentsQuantity: post.comments.length,
-    votingBalance: post.votes.reduce(
-      (acc, vote) => (vote.choice === "up" ? acc + 1 : acc - 1),
-      0
-    ),
-    myVote: post.votes.find((vote) => vote.userId === userId)?.choice ?? null,
-  }));
-
-  res.json({ data });
+  res.json({ data: posts });
 });
 
 postsRouter.post(

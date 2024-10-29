@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Comment, CommentVote } from "../../models";
 import { authMiddleware } from "../auth/auth.middleware";
 import { JwtPayload } from "jsonwebtoken";
 import {
@@ -10,6 +9,8 @@ import {
   commentUpdateValidator,
   commentUpvoteValidator,
 } from "./comments.validators";
+import { Comment } from "../../models/comment.model";
+import { CommentVote } from "../../models/comment-vote.model";
 
 export const commentsRouter = Router();
 
