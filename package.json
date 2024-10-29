@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "./src/app.js",
   "scripts": {
-    "test": "jest",
-    "start": "nodemon --env-file=.env --exec tsx src/app.ts"
+    "start": "nodemon --env-file=.env --exec tsx src/app.ts",
+    "test": "jest --coverage",
+    "test:watch": "yarn test --watch"
   },
   "author": "",
   "license": "ISC",
