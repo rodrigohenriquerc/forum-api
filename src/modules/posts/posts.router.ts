@@ -8,15 +8,19 @@ import {
   postUpdateValidator,
   postUpvoteValidator,
 } from "./posts.validators";
-import { Post } from "../../models/post.model";
-import { PostVote } from "../../models/post-vote.model";
+import {
+  createPost,
+  deletePost,
+  downvotePost,
+  findAllPosts,
+  updatePost,
+  upvotePost,
+} from "../../repositories/post.repository";
 
 export const postsRouter = Router();
 
 postsRouter.get("/posts", authMiddleware, async (req, res) => {
-  const posts = await Post.findAll({
-    order: [["createdAt", "DESC"]],
-  });
+  const posts = await findAllPosts();
 
   res.json({ data: posts });
 });
@@ -30,9 +34,9 @@ postsRouter.post(
 
     const { title, content } = req.body;
 
-    const newPost = await Post.create({ title, content, userId });
+    await createPost({ title, content, userId });
 
-    res.json({ data: newPost });
+    res.sendStatus(201);
   }
 );
 
@@ -45,7 +49,7 @@ postsRouter.delete(
 
     const { postId } = req.params;
 
-    await Post.destroy({ where: { id: postId, userId } });
+    await deletePost({ id: Number(postId), userId });
 
     res.status(200).json({ message: "The post was removed." });
   }
@@ -61,7 +65,7 @@ postsRouter.put(
     const { postId } = req.params;
     const { title, content } = req.body;
 
-    await Post.update({ title, content }, { where: { id: postId, userId } });
+    await updatePost({ id: Number(postId), title, content, userId });
 
     res.status(200).json({ message: "The post was updated." });
   }
@@ -76,20 +80,9 @@ postsRouter.post(
 
     const { postId } = req.params;
 
-    const currentVote = await PostVote.findOne({ where: { postId, userId } });
+    await upvotePost({ postId: Number(postId), userId });
 
-    if (!currentVote) {
-      await PostVote.create({ userId, postId, choice: "up" });
-      res.status(200).json({ message: "The upvote has been registered." });
-    } else if (currentVote.choice === "up") {
-      await currentVote.destroy();
-      res.status(200).json({ message: "The upvote has been removed." });
-    } else {
-      await currentVote.update({ choice: "up" });
-      res.status(200).json({
-        message: "The change from downvote to upvote has been registered.",
-      });
-    }
+    res.sendStatus(204);
   }
 );
 
@@ -102,19 +95,8 @@ postsRouter.post(
 
     const { postId } = req.params;
 
-    const currentVote = await PostVote.findOne({ where: { postId, userId } });
+    await downvotePost({ postId: Number(postId), userId });
 
-    if (!currentVote) {
-      await PostVote.create({ userId, postId, choice: "down" });
-      res.status(200).json({ message: "The downvote has been registered." });
-    } else if (currentVote.choice === "down") {
-      await currentVote.destroy();
-      res.status(200).json({ message: "The downvote has been removed." });
-    } else {
-      await currentVote.update({ choice: "down" });
-      res.status(200).json({
-        message: "The change from upvote to downvote has been registered.",
-      });
-    }
+    res.sendStatus(204);
   }
 );

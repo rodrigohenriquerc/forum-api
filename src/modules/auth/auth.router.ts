@@ -3,9 +3,12 @@ import { Router, Request, Response } from "express";
 import { matchedData } from "express-validator";
 
 import { registerValidator, loginValidator } from "./auth.validators";
-import { User } from "../../models/user.model";
 import { hashPassword, checkPassword } from "../../utils/password.util";
 import { generateToken } from "../../utils/jwt.util";
+import {
+  createUser,
+  findUserByEmail,
+} from "../../repositories/user.repository";
 
 export const authRouter = Router();
 
@@ -15,7 +18,7 @@ authRouter.post(
   async (req: Request, res: Response) => {
     const { name, email, password } = matchedData(req);
 
-    const user = await User.findOne({ where: { email } });
+    const user = await findUserByEmail(email);
 
     if (user) {
       res.status(400).json({ messages: ["Email already in use"] });
@@ -31,7 +34,7 @@ authRouter.post(
       return;
     }
 
-    await User.create({
+    await createUser({
       name,
       email,
       passwordHash,
@@ -44,7 +47,7 @@ authRouter.post(
 authRouter.post("/auth/login", loginValidator, async (req, res) => {
   const { email, password } = matchedData(req);
 
-  const user = await User.findOne({ where: { email } });
+  const user = await findUserByEmail(email);
 
   if (!user) {
     res.status(400).json({ messages: ["Invalid email."] });

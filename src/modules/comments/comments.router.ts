@@ -9,8 +9,14 @@ import {
   commentUpdateValidator,
   commentUpvoteValidator,
 } from "./comments.validators";
-import { Comment } from "../../models/comment.model";
-import { CommentVote } from "../../models/comment-vote.model";
+import {
+  createComment,
+  deleteComment,
+  downvoteComment,
+  findCommentsByPostId,
+  updateComment,
+  upvoteComment,
+} from "../../repositories/comment.repository";
 
 export const commentsRouter = Router();
 
@@ -21,7 +27,7 @@ commentsRouter.get(
   async (req, res) => {
     const { postId } = req.params;
 
-    const comments = await Comment.findAll({ where: { postId } });
+    const comments = await findCommentsByPostId(Number(postId));
 
     res.json({ data: comments });
   }
@@ -37,9 +43,13 @@ commentsRouter.post(
     const { postId } = req.params;
     const { content } = req.body;
 
-    const newComment = await Comment.create({ content, postId, userId });
+    await createComment({
+      content,
+      postId: Number(postId),
+      userId,
+    });
 
-    res.json({ data: newComment });
+    res.sendStatus(201);
   }
 );
 
@@ -52,7 +62,11 @@ commentsRouter.delete(
 
     const { postId, commentId } = req.params;
 
-    await Comment.destroy({ where: { id: commentId, postId, userId } });
+    await deleteComment({
+      id: Number(commentId),
+      postId: Number(postId),
+      userId,
+    });
 
     res.status(200).json({ message: "The comment was removed." });
   }
@@ -68,10 +82,12 @@ commentsRouter.put(
     const { postId, commentId } = req.params;
     const { content } = req.body;
 
-    await Comment.update(
-      { content },
-      { where: { id: commentId, postId, userId } }
-    );
+    await updateComment({
+      id: Number(commentId),
+      postId: Number(postId),
+      content,
+      userId,
+    });
 
     res.status(200).json({ message: "The comment was updated." });
   }
@@ -86,22 +102,13 @@ commentsRouter.post(
 
     const { commentId, postId } = req.params;
 
-    const currentVote = await CommentVote.findOne({
-      where: { commentId, postId, userId },
+    await upvoteComment({
+      commentId: Number(commentId),
+      postId: Number(postId),
+      userId,
     });
 
-    if (!currentVote) {
-      await CommentVote.create({ userId, commentId, postId, choice: "up" });
-      res.status(200).json({ message: "The upvote has been registered." });
-    } else if (currentVote.choice === "up") {
-      await currentVote.destroy();
-      res.status(200).json({ message: "The upvote has been removed." });
-    } else {
-      await currentVote.update({ choice: "up" });
-      res.status(200).json({
-        message: "The change from downvote to upvote has been registered.",
-      });
-    }
+    res.sendStatus(204);
   }
 );
 
@@ -114,21 +121,12 @@ commentsRouter.post(
 
     const { commentId, postId } = req.params;
 
-    const currentVote = await CommentVote.findOne({
-      where: { commentId, postId, userId },
+    await downvoteComment({
+      commentId: Number(commentId),
+      postId: Number(postId),
+      userId,
     });
 
-    if (!currentVote) {
-      await CommentVote.create({ userId, commentId, choice: "down" });
-      res.status(200).json({ message: "The downvote has been registered." });
-    } else if (currentVote.choice === "down") {
-      await currentVote.destroy();
-      res.status(200).json({ message: "The downvote has been removed." });
-    } else {
-      await currentVote.update({ choice: "down" });
-      res.status(200).json({
-        message: "The change from upvote to downvote has been registered.",
-      });
-    }
+    res.sendStatus(204);
   }
 );
