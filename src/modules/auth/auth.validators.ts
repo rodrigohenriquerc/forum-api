@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { runValidations } from "../../utils";
+import { runValidations } from "../../utils/validation.util";
 
 export const registerValidator = runValidations([
   body("name").trim().notEmpty().withMessage("Name is required."),

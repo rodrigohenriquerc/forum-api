@@ -1,5 +1,5 @@
 import { body, param } from "express-validator";
-import { runValidations } from "../../utils";
+import { runValidations } from "../../utils/validation.util";
 
 export const postCreationValidator = runValidations([
   body("title").trim().notEmpty().withMessage("Title is required."),
