@@ -9,6 +9,7 @@ const config: Config = {
   },
   testMatch: ["**/tests/**/*.ts", "**/?(*.)+(test).ts"],
   watchman: false,
+  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts"],
 };
 
 export default config;
