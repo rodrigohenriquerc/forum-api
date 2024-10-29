@@ -1,12 +1,12 @@
 import { Router, Request, Response } from "express";
 
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { matchedData } from "express-validator";
 
 import { registerValidator, loginValidator } from "./auth.validators";
 import { User } from "../../models/user.model";
+import { hashPassword, checkPassword } from "../../utils/password.util";
 
 export const authRouter = Router();
 
@@ -23,22 +23,22 @@ authRouter.post(
       return;
     }
 
-    bcrypt.hash(password, 10, async (error, passwordHash) => {
-      if (error) {
-        res
-          .status(400)
-          .json({ messages: ["Error registering user. Try again."] });
-        return;
-      }
+    const passwordHash = hashPassword(password);
 
-      const user = await User.create({
-        name,
-        email,
-        passwordHash,
-      });
+    if (!passwordHash) {
+      res
+        .status(400)
+        .json({ messages: ["Error registering user. Try again."] });
+      return;
+    }
 
-      res.status(200).json({ data: user });
+    await User.create({
+      name,
+      email,
+      passwordHash,
     });
+
+    res.status(200).json({ messages: ["The user has been registered."] });
   }
 );
 
@@ -52,7 +52,7 @@ authRouter.post("/auth/login", loginValidator, async (req, res) => {
     return;
   }
 
-  const isMatch = await bcrypt.compare(password, user.passwordHash);
+  const isMatch = await checkPassword(password, user.passwordHash);
 
   if (!isMatch) {
     res.status(400).json({ messages: ["Invalid password."] });
