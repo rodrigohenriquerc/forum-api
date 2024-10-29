@@ -4,7 +4,8 @@
   "main": "./src/app.js",
   "scripts": {
     "start": "nodemon --env-file=.env --exec tsx src/app.ts",
-    "test": "jest --coverage",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "test:watch": "yarn test --watch"
   },
   "author": "",
