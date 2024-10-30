@@ -1,7 +1,8 @@
+import { sequelize } from "../db";
+import { User } from "../models/user.model";
 import { Post } from "../models/post.model";
 import { PostVote } from "../models/post-vote.model";
-import { User } from "../models/user.model";
-import { sequelize } from "../db";
+import { Comment } from "../models/comment.model";
 
 interface CreatePostDto {
   title: string;
@@ -26,57 +27,75 @@ interface VotePostDto {
   userId: number;
 }
 
-export const findAllPosts = async () => {
+export const findAllPosts = async (userId: number) => {
   const posts = await Post.findAll({
     order: [["createdAt", "DESC"]],
+    include: [
+      {
+        model: User,
+        attributes: ["id", "name"],
+      },
+      {
+        model: Comment,
+        attributes: [],
+      },
+      {
+        model: PostVote,
+        attributes: [],
+      },
+    ],
     attributes: {
-      exclude: ["updatedAt", "userId"],
       include: [
         [
-          sequelize.literal(`
-              CAST(
-                COALESCE(
-                  (
-                    SELECT
-                      COUNT(c.id)
-                    FROM
-                      "Comments" c
-                    WHERE
-                      c."postId" = post.id
-                  ),
-                  0
-                ) AS INTEGER
-              )
-            `),
+          sequelize.literal(`(
+            SELECT
+              CAST(COUNT(*) AS INTEGER)
+            FROM
+              "Comments"
+            WHERE
+              "postId" = "post"."id"
+          )`),
           "commentsCount",
         ],
         [
-          sequelize.literal(`
-              CAST(
-                COALESCE(
-                  (
-                    SELECT
-                      SUM(
-                        CASE
-                          WHEN pv.choice = 'up' THEN 1
-                          WHEN pv.choice = 'down' THEN -1
-                          ELSE 0
-                        END
-                      )
-                    FROM
-                      "PostVotes" pv
-                    WHERE
-                      pv."postId" = post.id
-                  ),
-                  0
-                ) AS INTEGER
+          sequelize.literal(`(
+            SELECT
+              COALESCE(
+                CAST(
+                  SUM(
+                    CASE
+                      WHEN "choice" = 'up' THEN 1
+                      WHEN "choice" = 'down' THEN -1
+                      ELSE 0
+                    END
+                  ) AS INTEGER
+                ),
+                0
               )
-            `),
+            FROM
+              "PostVotes"
+            WHERE
+              "postId" = "post"."id"
+          )`),
           "votingBalance",
         ],
+        [
+          sequelize.literal(`(
+            SELECT
+              choice
+            FROM
+              "PostVotes"
+            WHERE
+              "postId" = "post"."id"
+              AND "userId" = ${userId}
+            LIMIT
+              1
+          )`),
+          "myVote",
+        ],
       ],
+      exclude: ["updatedAt", "userId"],
     },
-    include: [{ model: User, attributes: ["id", "name"] }],
     group: ["post.id", "user.id"],
   });
 

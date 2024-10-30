@@ -20,7 +20,9 @@ import {
 export const postsRouter = Router();
 
 postsRouter.get("/posts", authMiddleware, async (req, res) => {
-  const posts = await findAllPosts();
+  const userId = (req.user as JwtPayload)?.id;
+
+  const posts = await findAllPosts(userId);
 
   res.json({ data: posts });
 });
